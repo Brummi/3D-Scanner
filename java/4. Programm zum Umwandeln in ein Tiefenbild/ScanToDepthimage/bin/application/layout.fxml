@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane maxHeight="200.0" maxWidth="300.0" minHeight="200.0" minWidth="300.0" prefHeight="200.0" prefWidth="300.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <Button id="save" fx:id="save" layoutY="75.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="75.0" prefWidth="300.0" text="Save depthimage" />
+      <Button id="open" fx:id="open" mnemonicParsing="false" prefHeight="75.0" prefWidth="300.0" text="Open scanresult" />
+      <TextField id="maxDepth" fx:id="maxDepth" layoutY="150.0" maxHeight="50.0" maxWidth="300.0" minHeight="50.0" minWidth="300.0" prefHeight="50.0" prefWidth="300.0" promptText="max depth in cm" text="1000" />
+   </children>
+</AnchorPane>

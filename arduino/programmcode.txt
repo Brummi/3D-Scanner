@@ -1,0 +1,222 @@
+/*
+Author: Felix Wimbauer
+Date: 3.5.2015
+*/
+
+#include <AFMotor.h>
+#include <I2C.h>
+
+#define InterruptIDEncoder1 5
+#define InterruptIDEncoder2 4
+
+#define Sensor1Pin 16
+#define Sensor2Pin 17
+
+#define INPUT_SIZE 8
+
+#define    LIDARLite_ADDRESS   0x62          // Default I2C Address of LIDAR-Lite.
+#define    RegisterMeasure     0x00          // Register to write to initiate ranging.
+#define    MeasureValue        0x04          // Value to initiate ranging.
+#define    RegisterHighLowB    0x8f          // Register to get both High and Low bytes in 1 call.
+
+AF_DCMotor motor1(3, MOTOR12_64KHZ);
+AF_DCMotor motor2(4, MOTOR12_64KHZ);
+
+volatile int motorDir1 = 0;
+volatile int motorDir2 = 0;
+
+volatile int motorCounter1 = 0;
+volatile int motorCounter2 = 0;
+
+int triggerPin = 14;
+int echoPin = 15;
+
+String input;
+int inputpos;
+
+void setup() {
+  Serial.begin(9600);
+      
+  I2c.begin(); // Opens & joins the irc bus as master
+  delay(100); // Waits to make sure everything is powered up before sending or receiving data  
+  I2c.timeOut(50); // Sets a timeout to ensure no locking up of sketch if I2C communication fails
+  
+  pinMode(14, OUTPUT);
+  pinMode(15, INPUT);
+  pinMode(16, INPUT_PULLUP);
+  pinMode(17, INPUT_PULLUP);
+  pinMode(18, INPUT_PULLUP);
+  pinMode(19, INPUT_PULLUP);
+  pinMode(20, INPUT_PULLUP);
+  pinMode(21, INPUT_PULLUP);
+  
+  attachInterrupt(InterruptIDEncoder1, countMotor1, FALLING);
+  attachInterrupt(InterruptIDEncoder2, countMotor2, FALLING);
+  
+  motor1.setSpeed(255);
+  motor2.setSpeed(255);
+  
+  motorCounter1 = 0;
+  motorCounter2 = 0;
+  
+  delay(1000);
+  
+  Serial.println("START");
+}
+
+void loop() 
+{
+  while(Serial.peek() > 0)
+  {
+    char c = Serial.read();
+    if(c == ';')
+    {
+      recieve();
+      inputpos = 0;
+      input = "";
+      Serial.flush();
+      break;
+    }
+    else
+    { 
+      input += c;
+      inputpos++;
+    }
+  }
+}
+
+
+//Serial communication - recieve#############################################################################
+
+void recieve()
+{
+  switch(input.charAt(0))
+  {
+    case 'd': 
+    {
+      sendDistance();
+      break;
+    }
+    case 'c':
+    {
+      if(input.charAt(1) == '1')sendMotorCounter1();
+      else if(input.charAt(1) == '2')sendMotorCounter2();
+      else Serial.println("invalid");
+      break;
+    }
+    case 'm':
+    {
+      int i = input.substring(3).toInt();
+      if(input.charAt(2) == '-')i = -i;
+      if(input.charAt(1) == '1')moveTo(1, i);
+      else if(input.charAt(1) == '2')moveTo(2, i);
+      else Serial.println("invalid");
+      break;
+    }
+    default: Serial.println("invalid");
+  }
+}
+
+//Serial communication - send################################################################################
+
+void sendMotorCounter1()
+{
+  Serial.println(motorCounter1);
+}
+
+void sendMotorCounter2()
+{
+  Serial.println(motorCounter2);
+}
+
+void sendDistance()
+{
+  Serial.println(measure());  
+}
+
+//Hardware controls##########################################################################################
+
+int measure()
+{
+  // Write 0x04 to register 0x00
+  uint8_t nackack = 100; // Setup variable to hold ACK/NACK resopnses     
+  while (nackack != 0){ // While NACK keep going (i.e. continue polling until sucess message (ACK) is received )
+    nackack = I2c.write(LIDARLite_ADDRESS,RegisterMeasure, MeasureValue); // Write 0x04 to 0x00
+    delay(1); // Wait 1 ms to prevent overpolling
+  }
+
+  byte distanceArray[2]; // array to store distance bytes from read function
+  
+  
+  // Read 2byte distance from register 0x8f
+  nackack = 100; // Setup variable to hold ACK/NACK resopnses     
+  while (nackack != 0){ // While NACK keep going (i.e. continue polling until sucess message (ACK) is received )
+    nackack = I2c.read(LIDARLite_ADDRESS,RegisterHighLowB, 2, distanceArray); // Read 2 Bytes from LIDAR-Lite Address and store in array
+    delay(1); // Wait 1 ms to prevent overpolling
+  }
+  int distance = (distanceArray[0] << 8) + distanceArray[1];  // Shift high byte [0] 8 to the left and add low byte [1] to create 16-bit int
+  
+  return distance;
+}
+
+void moveTo(int id, int to)
+{
+  if(id == 1)
+  {
+    if(motorCounter1 == to)
+    {
+      Serial.println("m");
+      return;
+    }
+    else if(motorCounter1 > to)
+    {
+      motorDir1 = -1;
+      motor1.run(BACKWARD);
+      while(motorCounter1 > to){if(digitalRead(Sensor1Pin) != 1)motorCounter1 = 0;}
+      motor1.run(RELEASE);
+    }
+    else
+    {
+      motorDir1 = 1;
+      motor1.run(FORWARD);
+      while(motorCounter1 < to)if(digitalRead(Sensor1Pin) != 1)motorCounter1 = 0;
+      motor1.run(RELEASE);
+    }
+  }
+  else if(id == 2)
+  {
+    if(motorCounter2 == to)
+    {
+      Serial.println("m");
+      return;
+    }
+    else if(motorCounter2 > to)
+    {
+      motorDir2 = -1;
+      motor2.run(BACKWARD);
+      while(motorCounter2 > to);//{if(digitalRead(Sensor2Pin) != 1)motorCounter2 = 0;}
+      motor2.run(RELEASE);
+    }
+    else
+    {
+      motorDir2 = 1;
+      motor2.run(FORWARD);
+      while(motorCounter2 < to);//{if(digitalRead(Sensor2Pin) != 1)motorCounter2 = 0;}
+      motor2.run(RELEASE);
+    }
+  }
+  Serial.println("m");
+}
+
+
+//Interrupt Routines#########################################################################################
+
+void countMotor1()
+{
+  motorCounter1 += motorDir1;
+}
+
+void countMotor2()
+{
+  motorCounter2 += motorDir2;
+}

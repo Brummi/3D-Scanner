@@ -1,0 +1,39 @@
+zu 2. Arduino Programm
+.txt und .ino Dateien lassen sich in einem normalen Texteditor öffnen.
+
+zu 3. Java Programme
+In den jewiligen Unterordnern befinden sich das Eclipse Projekt (Ordner) und die ausführbare .jar Datei (ausführbar sofern Java 8 installiert ist).
+Der Programmcode der jewiligen Programme befindet sich im Eclipse Projekt Ordner unter src/src/ oder src/application.
+Bsp.: 3DViewer/src/application/
+Die .java Dateien lassen sich auch ohne Java Installation mit einem Text Editor öffnen.
+
+
+zu 3.2 - 3.5
+Man muss die scanErgebnis.txt Datei (oder die nach der Fehlerbehebung abgespeicherte Datei) öffnen.
+
+Fehlerbehebung: 
+Ebenfalls als Textdatei (.txt) abspeichern; kann wieder von den Programmen (z.B. Tiefenbildersteller) geöffnet werden.
+Parameter gibt die maximal zulässige Entfernung (in cm) zwischen Punkten an (siehe Algorithmus)(passende Werte ~10; höher = Kanten werden als Fehler erkannt; niedriger = Fehler werden nicht erkannt). 
+
+Tiefenbilderstellung: 
+Als Bilddatei (.png) abspeichern.
+Parameter gibt die maximale Entferung (in cm) an, die im Tiefenbild angezeigt werden (verhindert, dass durch Messfehler der Detailgrad verschlechtert wird)(passende Werte 600 - 1000).
+z.B.
+ohne Maximale Entfernung: 	weiß: 0m 	schwarz: 40m (Messfehler)		Entfernung für eine Farbstufe ~16cm
+mit Maximaler Entfernung: 		weiß: 0m 	schwarz 8m			Entfernung für eine Farbstufe ~3cm
+
+WavefrontObj Konvertierung: 
+Als .obj Datei abspeichern
+
+
+zu 4. Scanergebnis
+siehe 3.2 - 3.5
+.blend Datei lässt sich in Blender öffnen.
+.obj Datei lässt sich in Blender importieren. 
+Diese muss allerdings auf eine Größe von 0.01 der alten Größe skaliert werden, um eine geeignete Darstellung mit einer Skalierung von 1 Blendereinheit = 1 Meter zu gewährleisten (Shortcut: "s" -> Zahl eingeben -> Enter drücken). 
+Zusätzlich muss die Punktwolke um 90° um die X-Achse gedreht werden (Shortcut: "r" -> "x" -> Zahl eingeben -> Enter drücken).
+
+
+zu 5. Geogebra Dateien
+.gbb Dateien lassen sich mit Geogebra öffnen.
+(wurden mit Geogebra 4 und nicht Geogebra 5 erstellt, sollte allerdings kein Problem darstellen)
